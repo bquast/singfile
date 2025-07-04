@@ -1,12 +1,28 @@
 const API_BASE = '/api';
 const TOKEN_KEY = 'singfile_token';
 
+// Helper function to safely decode a Base64Url string
+function safeBase64UrlDecode(str) {
+    try {
+        let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+        const padding = base64.length % 4;
+        if (padding) {
+            base64 += '===='.slice(padding);
+        }
+        return atob(base64);
+    } catch (e) {
+        console.error("Base64Url decoding failed:", e);
+        return null;
+    }
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
 
-    if (path === '/' || path === '/index.html') {
+    if (path === '/' || path === '/index.html' || path.endsWith('/')) {
         initIndexPage();
-    } else if (path === '/dashboard.html') {
+    } else if (path.includes('dashboard.html')) {
         initDashboardPage();
     }
 });
@@ -25,6 +41,7 @@ function clearAuthToken() {
 
 function displayMessage(elementId, text, isError = false) {
     const el = document.getElementById(elementId);
+    if (!el) return;
     el.textContent = text;
     el.className = isError ? 'message error' : 'message success';
 }
@@ -32,7 +49,6 @@ function displayMessage(elementId, text, isError = false) {
 // --- INDEX PAGE LOGIC ---
 
 function initIndexPage() {
-    // If user is already logged in, redirect to dashboard
     if (getAuthToken()) {
         window.location.href = '/dashboard.html';
         return;
@@ -41,53 +57,57 @@ function initIndexPage() {
     const registerForm = document.getElementById('register-form');
     const loginForm = document.getElementById('login-form');
 
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(registerForm);
-        const data = Object.fromEntries(formData.entries());
-        const messageEl = 'register-message';
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(registerForm);
+            const data = Object.fromEntries(formData.entries());
+            const messageEl = 'register-message';
 
-        try {
-            const response = await fetch(`${API_BASE}/register`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            const responseText = await response.text();
-            if (!response.ok) {
-                throw new Error(responseText);
+            try {
+                const response = await fetch(`${API_BASE}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                const responseText = await response.text();
+                if (!response.ok) {
+                    throw new Error(responseText);
+                }
+                displayMessage(messageEl, responseText, false);
+                registerForm.reset();
+            } catch (err) {
+                displayMessage(messageEl, err.message, true);
             }
-            displayMessage(messageEl, responseText, false);
-            registerForm.reset();
-        } catch (err) {
-            displayMessage(messageEl, err.message, true);
-        }
-    });
+        });
+    }
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(loginForm);
-        const data = Object.fromEntries(formData.entries());
-        const messageEl = 'login-message';
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(loginForm);
+            const data = Object.fromEntries(formData.entries());
+            const messageEl = 'login-message';
 
-        try {
-            const response = await fetch(`${API_BASE}/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            
-            if (!response.ok) {
-                 const responseText = await response.text();
-                 throw new Error(responseText || 'Login failed');
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+                
+                if (!response.ok) {
+                     const responseText = await response.text();
+                     throw new Error(responseText || 'Login failed');
+                }
+                const { token } = await response.json();
+                setAuthToken(token);
+                window.location.href = '/dashboard.html';
+            } catch (err) {
+                displayMessage(messageEl, err.message, true);
             }
-            const { token } = await response.json();
-            setAuthToken(token);
-            window.location.href = '/dashboard.html';
-        } catch (err) {
-            displayMessage(messageEl, err.message, true);
-        }
-    });
+        });
+    }
 }
 
 
@@ -105,62 +125,71 @@ function initDashboardPage() {
     const welcomeUser = document.getElementById('welcome-user');
     const cancelEditBtn = document.getElementById('cancel-edit-btn');
     
-    // Decode username from JWT for display
     try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
+        const payloadStr = safeBase64UrlDecode(token.split('.')[1]);
+        if (!payloadStr) throw new Error("Invalid token payload");
+        const payload = JSON.parse(payloadStr);
         welcomeUser.textContent = `Welcome, ${payload.username}`;
     } catch(e) {
-        console.error("Could not parse JWT for username");
+        console.error("Could not parse JWT for username:", e);
         clearAuthToken();
         window.location.href = '/index.html';
+        return; // Stop execution if token is bad
     }
 
-    logoutBtn.addEventListener('click', () => {
-        clearAuthToken();
-        window.location.href = '/index.html';
-    });
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            clearAuthToken();
+            window.location.href = '/index.html';
+        });
+    }
     
-    cancelEditBtn.addEventListener('click', () => resetFileForm());
+    if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', () => resetFileForm());
+    }
 
     loadFiles();
 
-    fileForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(fileForm);
-        const content = formData.get('content');
-        const filename = formData.get('filename');
-        const editModeFilename = document.getElementById('edit-mode-filename').value;
-        const messageEl = 'file-message';
+    if (fileForm) {
+        fileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(fileForm);
+            const content = formData.get('content');
+            const filename = formData.get('filename');
+            const editModeFilename = document.getElementById('edit-mode-filename').value;
+            const messageEl = 'file-message';
 
-        const isEditing = !!editModeFilename;
-        const url = isEditing ? `${API_BASE}/files/${editModeFilename}` : `${API_BASE}/files`;
-        const method = isEditing ? 'PUT' : 'POST';
+            const isEditing = !!editModeFilename;
+            const url = isEditing ? `${API_BASE}/files/${editModeFilename}` : `${API_BASE}/files`;
+            const method = isEditing ? 'PUT' : 'POST';
 
-        try {
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ filename, content }),
-            });
-            const responseText = await response.text();
-             if (!response.ok) {
-                throw new Error(responseText);
+            try {
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ filename, content }),
+                });
+                const responseText = await response.text();
+                 if (!response.ok) {
+                    throw new Error(responseText);
+                }
+                displayMessage(messageEl, isEditing ? 'File updated successfully!' : 'File created successfully!', false);
+                resetFileForm();
+                loadFiles();
+            } catch (err) {
+                displayMessage(messageEl, err.message, true);
             }
-            displayMessage(messageEl, isEditing ? 'File updated successfully!' : 'File created successfully!', false);
-            resetFileForm();
-            loadFiles();
-        } catch (err) {
-            displayMessage(messageEl, err.message, true);
-        }
-    });
+        });
+    }
 }
 
 async function loadFiles() {
     const token = getAuthToken();
     const fileList = document.getElementById('file-list');
+    if (!fileList) return;
     fileList.innerHTML = '<li>Loading...</li>';
 
     try {
@@ -237,13 +266,26 @@ async function deleteFile(filename) {
 }
 
 function resetFileForm() {
-    document.getElementById('file-form').reset();
-    document.getElementById('form-title').textContent = 'Create New File';
-    document.getElementById('filename').readOnly = false;
-    document.getElementById('edit-mode-filename').value = '';
-    document.getElementById('save-btn').textContent = 'Save File';
-    document.getElementById('cancel-edit-btn').style.display = 'none';
-    document.getElementById('file-message').textContent = '';
+    const fileForm = document.getElementById('file-form');
+    if(fileForm) fileForm.reset();
+    
+    const formTitle = document.getElementById('form-title');
+    if(formTitle) formTitle.textContent = 'Create New File';
+    
+    const filenameInput = document.getElementById('filename');
+    if(filenameInput) filenameInput.readOnly = false;
+    
+    const editModeInput = document.getElementById('edit-mode-filename');
+    if(editModeInput) editModeInput.value = '';
+
+    const saveBtn = document.getElementById('save-btn');
+    if(saveBtn) saveBtn.textContent = 'Save File';
+
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    if(cancelBtn) cancelBtn.style.display = 'none';
+
+    const fileMessage = document.getElementById('file-message');
+    if(fileMessage) fileMessage.textContent = '';
 }
 
 // Make editFile and deleteFile globally accessible from the inline onclick handlers
