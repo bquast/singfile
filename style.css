@@ -1,0 +1,195 @@
+:root {
+    --primary-color: #007bff;
+    --primary-hover: #0056b3;
+    --secondary-color: #6c757d;
+    --secondary-hover: #5a6268;
+    --background-color: #f8f9fa;
+    --font-color: #212529;
+    --border-color: #dee2e6;
+    --white-color: #fff;
+    --error-color: #dc3545;
+    --success-color: #28a745;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--font-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+header {
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    margin: 0;
+    color: var(--primary-color);
+}
+
+header p {
+    margin: 0;
+    color: var(--secondary-color);
+}
+
+header nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.form-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.form-wrapper, .file-list-wrapper, .file-view {
+    background: var(--white-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+h2 {
+    margin-top: 0;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: .5rem;
+    font-weight: bold;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+textarea {
+    min-height: 150px;
+    resize: vertical;
+}
+
+.button, .button-secondary, .button-link {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: bold;
+    text-align: center;
+}
+
+.button {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+.button:hover {
+    background-color: var(--primary-hover);
+}
+
+.button-secondary {
+    background-color: var(--secondary-color);
+    color: var(--white-color);
+}
+
+.button-secondary:hover {
+    background-color: var(--secondary-hover);
+}
+
+.button-link {
+    background: none;
+    color: var(--primary-color);
+    padding: 0;
+    border: none;
+    font-size: 1em;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.message {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+#login-message.error, #register-message.error, #file-message.error {
+    color: var(--error-color);
+}
+
+#login-message.success, #register-message.success, #file-message.success {
+    color: var(--success-color);
+}
+
+#file-list {
+    list-style: none;
+    padding: 0;
+}
+
+#file-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#file-list li:last-child {
+    border-bottom: none;
+}
+
+#file-list .file-actions button, #file-list .file-actions a {
+    margin-left: 0.5rem;
+}
+
+.file-content {
+    background-color: #f4f4f4;
+    padding: 1rem;
+    border-radius: 4px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    border: 1px solid var(--border-color);
+}
+
+.author {
+    color: var(--secondary-color);
+    margin-top: -1rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-container {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - singfile</title>
+    <link href="/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>singfile</h1>
+            <nav>
+                <span id="welcome-user"></span>
+                <button id="logout-btn" class="button-link">Logout</button>
+            </nav>
+        </header>
+
+        <main>
+            <div class="form-wrapper" id="file-form-wrapper">
+                <h2 id="form-title">Create New File</h2>
+                <form id="file-form">
+                    <input type="hidden" id="edit-mode-filename" value="">
+                    <div class="form-group">
+                        <label for="filename">Filename</label>
+                        <input type="text" id="filename" name="filename" placeholder="e.g., notes.txt" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="content">Content</label>
+                        <textarea id="content" name="content" rows="10" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                         <button type="submit" class="button" id="save-btn">Save File</button>
+                         <button type="button" class="button-secondary" id="cancel-edit-btn" style="display:none;">Cancel</button>
+                    </div>
+                    <p id="file-message" class="message"></p>
+                </form>
+            </div>
+
+            <div class="file-list-wrapper">
+                <h2>Your Files</h2>
+                <ul id="file-list">
+                    </ul>
+            </div>
+        </main>
+    </div>
+    <script src="/app.js"></script>
+</body>
+</html>
