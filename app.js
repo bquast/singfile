@@ -20,10 +20,11 @@ function safeBase64UrlDecode(str) {
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
 
-    if (path === '/' || path === '/index.html' || path.endsWith('/')) {
-        initIndexPage();
-    } else if (path.includes('dashboard.html')) {
+    // This block is what changed to fix the bug.
+    if (path.includes('dashboard')) {
         initDashboardPage();
+    } else {
+        initIndexPage();
     }
 });
 
@@ -50,7 +51,7 @@ function displayMessage(elementId, text, isError = false) {
 
 function initIndexPage() {
     if (getAuthToken()) {
-        window.location.href = '/dashboard.html';
+        window.location.href = '/dashboard'; // Also changed to pretty URL
         return;
     }
     
@@ -102,7 +103,7 @@ function initIndexPage() {
                 }
                 const { token } = await response.json();
                 setAuthToken(token);
-                window.location.href = '/dashboard.html';
+                window.location.href = '/dashboard'; // Also changed to pretty URL
             } catch (err) {
                 displayMessage(messageEl, err.message, true);
             }
@@ -116,7 +117,7 @@ function initIndexPage() {
 function initDashboardPage() {
     const token = getAuthToken();
     if (!token) {
-        window.location.href = '/index.html';
+        window.location.href = '/';
         return;
     }
 
@@ -133,14 +134,14 @@ function initDashboardPage() {
     } catch(e) {
         console.error("Could not parse JWT for username:", e);
         clearAuthToken();
-        window.location.href = '/index.html';
+        window.location.href = '/';
         return; // Stop execution if token is bad
     }
 
     if (logoutBtn) {
         logoutBtn.addEventListener('click', () => {
             clearAuthToken();
-            window.location.href = '/index.html';
+            window.location.href = '/';
         });
     }
     
