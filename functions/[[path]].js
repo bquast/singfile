@@ -93,7 +93,7 @@ async function sendVerificationEmail({ env, request }, to, username, token) {
     const verificationLink = `${url.origin}/api/verify/${token}`;
     
     const emailBody = {
-        from: 'Singfile Verification <onboarding@resend.dev>', // IMPORTANT: Change if you have a verified domain
+        from: 'Singfile Verification <onboarding@heroquestmarketing.com>',
         to: [to],
         subject: 'Verify your email address for Singfile',
         html: `
