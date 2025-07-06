@@ -1,0 +1,13 @@
+{
+  "name": "singfile",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler pages deploy ."
+  },
+  "dependencies": {
+    "isomorphic-git": "^1.25.1",
+    "memfs": "^4.9.2",
+    "fflate": "^0.9.1"
+  }
+}
